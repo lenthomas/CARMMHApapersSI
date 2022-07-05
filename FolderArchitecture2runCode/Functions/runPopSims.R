@@ -854,7 +854,7 @@ runPopSims <- function(Sp, nsims, nyears, type = "Sim", parS = NULL,
             props <- props / sum(props)
             harvest.byclass[1:(na * 2)] <- harvest[j] * props
           } else {
-            stop("Harvest scenario hScenario not recognized.")
+            stop(paste0("Harvest scenario ", hScenario, " not recognized."))
           }
         }
         # Subtract off harvest; ensure no elements go negative
