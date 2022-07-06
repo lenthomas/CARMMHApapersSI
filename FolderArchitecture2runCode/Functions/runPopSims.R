@@ -839,16 +839,21 @@ runPopSims <- function(Sp, nsims, nyears, type = "Sim", parS = NULL,
         # Harvest scenarios go here
         if(hScenario == 1){
           # Harvest scenario 1 - harvest proportional to numbers in each age- and sex-class
+          # except 1st age class - calves not targetted
           props <- simres[1:(na * 2), j, i, 1]
+          # Remove calves
+          props[1] <- props[na + 1] <- 0
           props <- props / sum(props)
           harvest.byclass[1:(na * 2)] <- harvest[j] * props
         } else{
           if(hScenario == 2){
             # Harvest scenario 2 - harvest proportional to numbers in each age- and sex-class except
-            #   males older than 20 not harvested 
+            #   calves, and males 21 and older not harvested 
             props <- simres[1:(na * 2), j, i, 1]
+            # Remove calves
+            props[1] <- props[na + 1] <- 0
             # Females are elements 1:na; males (na + 1):(na * 2)
-            props[(na + 21):(na * 2)] <- 0
+            props[(na + 22):(na * 2)] <- 0
             # Another example - if you wanted to assume 0 harvest on  males:
             # props[(na + 1):(na * 2)] <- 0
             props <- props / sum(props)
@@ -857,6 +862,12 @@ runPopSims <- function(Sp, nsims, nyears, type = "Sim", parS = NULL,
             stop(paste0("Harvest scenario ", hScenario, " not recognized."))
           }
         }
+        # Deal with calves
+        # Number of mothers harvested is number of adult females times 
+        #   p(calving and calf survives)
+        Nmothers.harvested <- sum(Mnooil[1, ] * harvest.byclass)
+        # Assume all calves (half male and half female) of mothers harvested die
+        harvest.byclass[1] <- harvest.byclass[na + 1] <- Nmothers.harvested / 2
         # Subtract off harvest; ensure no elements go negative
         simres[, j + 1, i, 2] <- simres[, j + 1, i, 2] - harvest.byclass
         ind <- simres[, j + 1, i, 2] < 0
